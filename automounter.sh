@@ -150,4 +150,3 @@ while true; do
 done
 
 echo "Scriptul a fost terminat."
-
