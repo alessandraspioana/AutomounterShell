@@ -14,6 +14,8 @@ fi
 # si creeaza fisierul amsh.config
 
 declare -A MNT_MAP
+declare -A LAST_USED # se retine timestamp ul ultimei utilizari pt fiecare mountpoint
+TTL=300 # time to live e max de 5 minute
 
 while read -r folder device; do
 
@@ -39,7 +41,23 @@ done
 
 echo "Pornire AutomounterShell (amsh)..."
 
+#functie care verifica daca ttl a expirat 
+#si care verifica mountpoint urile si le demonteaza
+cleaup_mounts(){ 
+    now=$(date +%s) #timp curent 
+    for mp in "${!LAST_USED[@]}";do #parcurgem toate mountpoint urile
+        if mountpoint -q "$mp"; then # verificam daca mountpoint ul este montat
+            last=${LAST_USED[$mp]} #retinem timpul ultimei utilizari
+            if (( now - last > TTL )); then 
+                echo "TTL expirat pt $mp -> umount"
+                sudo umount "$mp" #demontam automat
+                unset LAST_USED["$mp"] #stergere intrare din last_used
+            fi
+        fi
+    done }
+
 while true; do
+    cleaup_mounts #cerificam existenta mountpoint urilor carora le a expirat ttl ul
     # afiseaza prompt-ul personalizat "amsh>"
     read -p "amsh> " command_line
 
@@ -81,12 +99,14 @@ while true; do
                 if [[ $? -eq 0 ]]; then
                     echo "Montare reusita! Schimb directorul."
                     cd "$TARGET_DIR"
+                    LAST_USED["$TARGET_DIR"]=$(date +%s) #salvam timpul ultimei utilizari
                 else
                     echo "Eroare la montarea dispozitivului. Verifica permisiunile."
                 fi
             else
                 echo "Dispozitivul este deja montat. Schimb directorul."
                 cd "$TARGET_DIR"
+                LAST_USED["$TARGET_DIR"]=$(date +%s) #actualizare timpul ult utilizari
             fi
 
         else
@@ -100,3 +120,5 @@ while true; do
 done
 
 echo "Scriptul a fost terminat."
+
+ 
