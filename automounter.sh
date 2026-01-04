@@ -15,7 +15,7 @@ fi
 
 declare -A MNT_MAP
 declare -A LAST_USED # se retine timestamp ul ultimei utilizari pt fiecare mountpoint
-TTL=15 # time to live e max de 5 minute
+TTL=300 # time to live e max de 5 minute (300 secunde)
 
 while read -r folder device; do
 
@@ -120,10 +120,10 @@ while true; do
     else
         eval "$command_line"
 
-        for mp in "{!MNT_MAP[@]}"; do
+        for mp in "${!MNT_MAP[@]}"; do
             if [[ "$command_line" == *"$mp"* ]]; then
                 if mountpoint -q "$mp"; then 
-                    LAST_USED["$mp"]=$(date + %s)
+                    LAST_USED["$mp"]=$(date +%s)
                 fi
             fi
         done
