@@ -19,6 +19,15 @@ if [[ -z "$USB_DEVICE_PARTITION" ]]; then
     exit 1
 fi
 
+## se testeaza daca se poate monta stick-ul
+if !sudo mount "$USB_DEVICE_PARTITION" "$MOUNT_POINT" >/dev/null 2>&1; then
+   echo "Eroare: Partitia nu poate fi montata, sa se verifice daca este conectat stick-ul"
+   exit 1
+else 
+   sudo umount "$MOUNT_POINT"
+   echo "Verificare reusita"
+fi
+
 # Crearea directorul (mount point) daca nu exista
 sudo mkdir -p "$MOUNT_POINT"
 echo "Directorul de montare '$MOUNT_POINT' a fost creat."
