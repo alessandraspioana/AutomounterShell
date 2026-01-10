@@ -9,8 +9,6 @@ echo "Pregatire configurare stick USB real"
 # 2) Folosim comanda 'lsblk' in terminal pentru a gasi numele
 # 3) Numele USB ului ar putea fi de ex: /dev/sdb1
 
-USB_DEVICE_PARTITION=?????????? NUME ???? 
-
 echo "Conecteaza stick-ul USB acum si ruleaza 'lsblk' in alt terminal pentru a gasi numele partitiei."
 read -p "Introdu numele complet al partitiei USB (ex: /dev/sdb1): " USB_DEVICE_PARTITION
 
@@ -19,18 +17,27 @@ if [[ -z "$USB_DEVICE_PARTITION" ]]; then
     exit 1
 fi
 
+if mount | grep -q "$USB_DEVICE_PARTITION"; then
+   echo "Dispozitivul $USB_DEVICE_PARTITION este deja montat in sistem. Se demonteaza pentru configurare..."
+   sudo umount "$USB_DEVICE_PARITITON"
+fi
+
+# creez directorul pentru montare in cazul in care el nu exista deja 
+
+if [[ ! -d "$MOUNT_POINT" ]]; then
+   sudo mkdir -p "$MOUNT_POINT"
+   sudo chmod 777 "$MOUNT_POINT" #oferim toate permisiunile pentru a nu avea erori
+   echo "Directorul de montare "$MOUNT_POINT" a fost creat"
+fi
+
 ## se testeaza daca se poate monta stick-ul
-if !sudo mount "$USB_DEVICE_PARTITION" "$MOUNT_POINT" >/dev/null 2>&1; then
+if ! sudo mount "$USB_DEVICE_PARTITION" "$MOUNT_POINT" >/dev/null 2>&1; then
    echo "Eroare: Partitia nu poate fi montata, sa se verifice daca este conectat stick-ul"
    exit 1
 else 
    sudo umount "$MOUNT_POINT"
    echo "Verificare reusita"
 fi
-
-# Crearea directorul (mount point) daca nu exista
-sudo mkdir -p "$MOUNT_POINT"
-echo "Directorul de montare '$MOUNT_POINT' a fost creat."
 
 # Generarea fisierul de configurare amsh.config
 # Aceasta sterge orice configuratie veche (simulata)
