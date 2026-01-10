@@ -15,7 +15,7 @@ fi
 
 declare -A MNT_MAP
 declare -A LAST_USED # se retine timestamp ul ultimei utilizari pt fiecare mountpoint
-TTL=30 # time to live e max de 5 minute (300 secunde)
+TTL=300 # time to live e max de 5 minute (300 secunde)
 
 while read -r folder device; do
 
